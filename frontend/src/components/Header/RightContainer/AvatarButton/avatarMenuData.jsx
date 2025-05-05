@@ -15,9 +15,9 @@ import PersonOutlineIcon from '@material-ui/icons/PersonOutline'
 
 // Define menu items for authenticated users
 export const getAuthenticatedMenuArray = (logoutHandler) => [
-  { Icon: AccountBoxOutlinedIcon, text: 'Your channel' },
+  { Icon: AccountBoxOutlinedIcon, text: 'Your Channel', route: '/channel/me' },
   { Icon: MonetizationOnOutlinedIcon, text: 'Purchase and memberships' },
-  { Icon: SettingsOutlinedIcon, text: 'YouTube Studio' },
+  { Icon: SettingsOutlinedIcon, text: 'YouTube Studio', route: '/studio' },
   { Icon: SupervisorAccountOutlinedIcon, text: 'Switch account', arrow: true },
   {
     Icon: ExitToAppOutlinedIcon,

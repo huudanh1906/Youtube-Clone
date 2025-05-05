@@ -11,6 +11,8 @@ import { useAuth } from '../../../../context/AuthContext'
 export function AvatarPopUpMenu({ anchorAvatarButton, handleAvatarMenuClose }) {
   const { isLoggedIn, currentUser } = useAuth();
 
+  console.log("In AvatarPopUpMenu - Auth state:", { isLoggedIn, currentUser });
+
   return (
     <StyledAvatarMenu
       anchorEl={anchorAvatarButton}
@@ -61,7 +63,7 @@ const StyledAvatarMenu = styled(({ className, ...props }) => (
   border-radius: 0;
   // not sure how to set the height to avoid Popover snapping to the top of window when the screen size is small
   width: 300px;
-  opacity: 0.5;
+  opacity: 1;
 
   .MuiTypography-body1 {
     font-size: 14px;

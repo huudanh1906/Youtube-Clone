@@ -43,8 +43,17 @@ public class User {
     @Size(max = 255)
     private String profileImageUrl;
 
+    @Size(max = 255)
+    private String bannerImageUrl;
+
     @Size(max = 1000)
     private String channelDescription;
+
+    @Size(max = 100)
+    private String location;
+
+    @Size(max = 255)
+    private String website;
 
     private boolean verified = false;
 
@@ -64,5 +73,10 @@ public class User {
         this.username = username;
         this.email = email;
         this.password = password;
+    }
+
+    // This method is used by UserPrincipal.create
+    public String getName() {
+        return username; // Using username as name for now
     }
 }

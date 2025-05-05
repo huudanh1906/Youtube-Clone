@@ -8,17 +8,30 @@ import {
   StyledListItemIcon,
 } from '../../../../utils/utils'
 import { createVideoMenuItems } from './createVideoMenuItems'
+import { useHistory } from 'react-router-dom'
 
 const CreateVideoMenu = ({ anchorVideoButton, handleVideoMenuClose }) => {
+  const history = useHistory()
+
+  const handleMenuItemClick = (path) => {
+    handleVideoMenuClose()
+    if (path) {
+      history.push(path)
+    }
+  }
+
   return (
     <VideoMenu
       anchorEl={anchorVideoButton}
       open={Boolean(anchorVideoButton)}
       onClose={handleVideoMenuClose}
     >
-      {createVideoMenuItems.map(({ Icon, text }) => {
+      {createVideoMenuItems.map(({ Icon, text, path }) => {
         return (
-          <StyledMenuItem key={text} onClick={handleVideoMenuClose}>
+          <StyledMenuItem
+            key={text}
+            onClick={() => handleMenuItemClick(path)}
+          >
             <StyledListItemIcon>
               <Icon fontSize="small" />
             </StyledListItemIcon>

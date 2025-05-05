@@ -76,10 +76,9 @@ const getSearchTermVideos = async (
         regionCode: 'GB',
         q: queryString,
       },
-    })
+    }, true)
+
     if (useLocalStorage) {
-      // data contains nextPageToken and totalResults for infinite-scroll
-      // but currently not implementing infinite-scroll
       localStorage.setItem(queryString, JSON.stringify(data))
     }
     searchResultsSetterFunction(data.items)
@@ -101,22 +100,14 @@ export const handleSearchFormSubmit = (
     event.preventDefault()
   }
 
-  let storedResults
+  // Không cần kiểm tra localStorage nữa vì đã sử dụng cacheService
+  // Trực tiếp gọi API với flag cache=true (đã cài đặt trong getSearchTermVideos)
+  getSearchTermVideos(
+    queryString,
+    searchResultsSetterFunction,
+    useLocalStorage
+  )
 
-  if (useLocalStorage) {
-    storedResults = JSON.parse(localStorage.getItem(queryString))
-  }
-
-  if (useLocalStorage && storedResults) {
-    searchResultsSetterFunction(storedResults.items)
-  } else {
-    // query API with the searchTerm
-    getSearchTermVideos(
-      queryString,
-      searchResultsSetterFunction,
-      useLocalStorage
-    )
-  }
   // no need to push history when reload on refresh, back, forward
   if (pushHistory) {
     history.push('/results?search_query=' + queryString)
@@ -140,7 +131,7 @@ const queryChannelDetails = async (
         part: isVideo ? 'snippet' : 'snippet,statistics',
         id: channelId,
       },
-    })
+    }, useLocalStorage)
 
     if (useLocalStorage) {
       if (isVideo) {

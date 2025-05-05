@@ -17,7 +17,7 @@ import he from 'he'
 import { ChannelDetails } from './ChannelDetails'
 import { MoreButton } from './MoreButton'
 
-const VideoCard = ({ video }) => {
+const VideoCard = ({ video, showSubscribeButton = false }) => {
   const history = useHistory()
   const isMobileView = useIsMobileView()
   const {
@@ -67,7 +67,14 @@ const VideoCard = ({ video }) => {
           </VideoTitle>
         }
         subheader={
-          <ChannelDetails {...{ channelTitle, publishedAt, viewCount }} />
+          <ChannelDetails
+            channelTitle={channelTitle}
+            publishedAt={publishedAt}
+            viewCount={viewCount}
+            channelId={channelId}
+            channelThumbnailUrl={channelAvatar}
+            showSubscribeButton={showSubscribeButton}
+          />
         }
       />
     </StyledCard>

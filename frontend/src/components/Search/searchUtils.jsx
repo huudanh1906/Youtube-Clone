@@ -5,7 +5,7 @@ import { Typography, Avatar } from '@material-ui/core'
 import { StyledCardHeader, VideoTitle } from '../Videos/VideoCard'
 import { TWO_COL_MIN_WIDTH } from '../../utils/utils'
 
-// this is unique to searchResults, because popular videos no need to get more details from 'contentDetails,statistics'
+// Cập nhật hàm để tận dụng caching
 const getVideoDetails = async (
   useLocalStorage,
   videoId,
@@ -20,24 +20,26 @@ const getVideoDetails = async (
         part: 'contentDetails,statistics',
         id: videoId,
       },
-    })
-    durationSetterFunction(items[0].contentDetails.duration)
-    viewCountSetterFunction(items[0].statistics.viewCount)
+    }, useLocalStorage); // Thêm tham số để sử dụng cache
 
+    durationSetterFunction(items[0].contentDetails.duration);
+    viewCountSetterFunction(items[0].statistics.viewCount);
+
+    // Vẫn giữ lại localStorage cho khả năng tương thích ngược
     if (useLocalStorage) {
       localStorage.setItem(
         `${videoId}_duration`,
         JSON.stringify(items[0].contentDetails.duration)
-      )
+      );
       localStorage.setItem(
         `${videoId}_viewCount`,
         JSON.stringify(items[0].statistics.viewCount)
-      )
+      );
     }
   } catch (error) {
-    console.log(error)
+    console.log(error);
   }
-}
+};
 
 export const useGetVideoDetails = (
   useLocalStorage,

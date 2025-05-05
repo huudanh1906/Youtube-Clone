@@ -13,12 +13,20 @@ export const AvatarAccountInfo = ({ onClick, user }) => {
   const isMobileView = useIsMobileView()
   const username = user?.username || 'Guest'
   const email = user?.email || ''
-  // Get first letter of username for avatar
+  // Get profile image URL or first letter of username for avatar
   const avatarLetter = username.charAt(0).toUpperCase()
+  const profileImageUrl = user?.profileImageUrl
+    ? `http://localhost:8080${user.profileImageUrl}`
+    : null
 
   return (
     <AccountInfoHeader style={isMobileView ? { padding: '8px' } : null}>
-      <Avatar style={{ backgroundColor: '#ef6c00' }}>{avatarLetter}</Avatar>
+      <Avatar
+        style={{ backgroundColor: '#ef6c00' }}
+        src={profileImageUrl}
+      >
+        {avatarLetter}
+      </Avatar>
       <Box>
         <AccountName>{username}</AccountName>
         {email && <AccountEmail>{email}</AccountEmail>}

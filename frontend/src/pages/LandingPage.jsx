@@ -34,7 +34,7 @@ const Videos = ({
   popularVideosNextPageToken,
   setPopularVideosNextPageToken,
 }) => {
-  const VIDEOS_PER_QUERY = 24
+  const VIDEOS_PER_QUERY = 12
   const isMobileView = useIsMobileView()
   const [userSettingToShowFullSidebar] = useAtom(
     userSettingToShowFullSidebarAtom

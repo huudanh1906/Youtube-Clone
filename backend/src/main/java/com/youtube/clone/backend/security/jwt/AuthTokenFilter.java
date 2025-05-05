@@ -66,7 +66,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
         // Debug the path
         logger.info("Request path: {}", path);
 
-        // Skip filter for authentication endpoints - account for context path
-        return path.endsWith("/auth/signin") || path.endsWith("/auth/signup");
+        // Skip filter for authentication endpoints with /api prefix
+        return path.endsWith("/api/auth/signin") || path.endsWith("/api/auth/signup");
     }
 }

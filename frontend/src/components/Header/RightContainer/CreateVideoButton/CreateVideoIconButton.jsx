@@ -5,7 +5,7 @@ import { IconTooltip, StyledIconButton } from '../../../../utils/utils'
 function CreateVideoIconButton({ setAnchorVideoButton }) {
 
   return (
-    <IconTooltip title="Create">
+    <IconTooltip title="Upload Video">
       <StyledIconButton
         onClick={(event) => setAnchorVideoButton(event.currentTarget)}
       >

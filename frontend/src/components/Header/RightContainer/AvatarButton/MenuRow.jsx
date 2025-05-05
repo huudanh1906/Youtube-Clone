@@ -4,8 +4,13 @@ import ListItemText from '@material-ui/core/ListItemText'
 import { StyledMenuItem, StyledListItemIcon } from '../../../../utils/utils'
 
 export const MenuRow = ({ Icon, text, arrow, onClick }) => {
+  const handleClick = () => {
+    console.log(`Clicked menu item: ${text}`);
+    if (onClick) onClick();
+  };
+
   return (
-    <MenuItem onClick={onClick}>
+    <MenuItem onClick={handleClick}>
       <StyledListItemIcon>
         <Icon fontSize="small" />
       </StyledListItemIcon>

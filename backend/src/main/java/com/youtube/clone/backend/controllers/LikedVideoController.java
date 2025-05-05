@@ -16,7 +16,7 @@ import java.util.List;
 
 @CrossOrigin(origins = "*", maxAge = 3600, allowedHeaders = "*")
 @RestController
-@RequestMapping("/videos/likes")
+@RequestMapping("/api/videos/likes")
 public class LikedVideoController {
 
     @Autowired

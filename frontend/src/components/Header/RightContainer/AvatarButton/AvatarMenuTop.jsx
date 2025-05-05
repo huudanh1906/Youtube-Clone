@@ -14,6 +14,7 @@ export const AvatarMenuTop = ({ onClick, isUnauthenticated }) => {
   };
 
   const handleNavigation = (route) => {
+    console.log(`Navigating to: ${route}`);
     if (onClick) onClick();
     history.push(route);
   };
@@ -33,8 +34,19 @@ export const AvatarMenuTop = ({ onClick, isUnauthenticated }) => {
   }
 
   const menuItems = getAuthenticatedMenuArray(handleLogout);
-  return menuItems.slice(0, 5).map(({ Icon, text, arrow, onClick: itemOnClick }) => {
-    const handleClick = itemOnClick || onClick;
+  return menuItems.slice(0, 5).map(({ Icon, text, arrow, route, onClick: itemOnClick }) => {
+    let handleClick;
+
+    // Xử lý các trường hợp khác nhau
+    if (route) {
+      console.log(`Menu item ${text} has route: ${route}`);
+      handleClick = () => handleNavigation(route);
+    } else if (itemOnClick) {
+      handleClick = itemOnClick;
+    } else {
+      handleClick = onClick;
+    }
+
     return <MenuRow key={text} {...{ Icon, text, arrow, onClick: handleClick }} />;
   });
 };

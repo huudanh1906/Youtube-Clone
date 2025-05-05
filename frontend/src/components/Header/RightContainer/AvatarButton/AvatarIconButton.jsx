@@ -19,18 +19,26 @@ function AvatarIconButton({ setAnchorAvatarButton }) {
     }
   };
 
-  // Get the first letter of the username for avatar
+  // Get user profile image or fallback to first letter
   const getAvatarContent = () => {
     if (!isLoggedIn) {
       return <PersonOutlineIcon />;
     }
 
-    if (currentUser && currentUser.username) {
+    if (currentUser?.profileImageUrl) {
+      return null; // Will use the src attribute instead
+    } else if (currentUser && currentUser.username) {
       return currentUser.username.charAt(0).toUpperCase();
     }
 
     return 'U'; // Default if no username
   };
+
+  // Check if user has a profile image
+  const hasProfileImage = isLoggedIn && currentUser?.profileImageUrl;
+  const profileImageUrl = hasProfileImage
+    ? `http://localhost:8080${currentUser.profileImageUrl}`
+    : null;
 
   // If not logged in, show sign in button
   if (!isLoggedIn) {
@@ -50,7 +58,9 @@ function AvatarIconButton({ setAnchorAvatarButton }) {
   // If logged in, show avatar button
   return (
     <StyledIconButton onClick={handleSignInClick}>
-      <StyledAvatar>
+      <StyledAvatar
+        src={profileImageUrl}
+      >
         {getAvatarContent()}
       </StyledAvatar>
     </StyledIconButton>

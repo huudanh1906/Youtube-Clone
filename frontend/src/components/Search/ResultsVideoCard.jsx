@@ -14,16 +14,16 @@ import { ChannelImage } from './ChannelImage'
 import { VideoThumbnail } from './VideoThumbnail'
 import { MobileChannelContent } from './MobileChannelContent'
 import { MobileVideoContent } from './MobileVideoContent'
-import { ChannelSubscribeButton } from './ChannelSubscribeButton'
+import SubscribeButton from '../Videos/SubscribeButton'
 import { DesktopChannelContent } from './DesktopChannelContent'
 import { DesktopVideoContent } from './DesktopVideoContent'
 
 const ResultsVideoCard = ({ video }) => {
   const history = useHistory()
   const {
-    id: { kind, videoId },
+    id: { kind, videoId, channelId: idChannelId },
     snippet: {
-      channelId,
+      channelId: snippetChannelId,
       channelTitle,
       title,
       publishedAt,
@@ -31,6 +31,9 @@ const ResultsVideoCard = ({ video }) => {
       description,
     },
   } = video
+
+  // Sử dụng channelId từ id hoặc snippet tùy theo trường hợp
+  const channelId = idChannelId || snippetChannelId
 
   const isMobileView = useIsMobileView()
   const isVideo = kind === 'youtube#video'
@@ -69,6 +72,10 @@ const ResultsVideoCard = ({ video }) => {
     }
   }
 
+  const handleChannelClick = () => {
+    history.push(`/channel/${channelId}`)
+  }
+
   if (isVideo) {
     return (
       <StyledCard onClick={handleVideoClick} isVideo={isVideo}>
@@ -87,6 +94,7 @@ const ResultsVideoCard = ({ video }) => {
               channelAvatar,
               channelTitle,
               description,
+              channelId,
             }}
           />
         )}
@@ -96,6 +104,7 @@ const ResultsVideoCard = ({ video }) => {
     // if the row is a channel
     return (
       <StyledCard isVideo={isVideo}>
+        <div onClick={handleChannelClick} style={{ cursor: 'pointer', display: 'flex' }}>
         <ChannelImage thumbnailImage={thumbnailImage} />
 
         {isMobileView ? (
@@ -105,9 +114,19 @@ const ResultsVideoCard = ({ video }) => {
         ) : (
           <DeskChannelContentContainer>
             <DesktopChannelContent {...{ channelTitle, channelInfo }} />
-            {/* Red subscribe button if it's a channel on desktop view */}
-            {!isMobileView && showSubscribeButton && <ChannelSubscribeButton />}
           </DeskChannelContentContainer>
+          )}
+        </div>
+
+        {/* Nút Subscribe mới với chức năng thực tế */}
+        {!isMobileView && showSubscribeButton && (
+          <SubscribeButtonContainer>
+            <SubscribeButton
+              channelId={channelId}
+              channelTitle={channelTitle}
+              channelThumbnailUrl={thumbnailImage}
+            />
+          </SubscribeButtonContainer>
         )}
       </StyledCard>
     )
@@ -120,6 +139,13 @@ const DeskChannelContentContainer = styled.div`
   display: flex;
   flex-grow: 1;
   flex-basis: 60%;
+`
+
+const SubscribeButtonContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: fit-content;
 `
 
 const StyledCard = styled.div`

@@ -17,6 +17,8 @@ import HelpOutlineOutlinedIcon from '@material-ui/icons/HelpOutlineOutlined'
 import FeedbackOutlinedIcon from '@material-ui/icons/FeedbackOutlined'
 import ExpandLessOutlinedIcon from '@material-ui/icons/ExpandLessOutlined'
 import ThumbUpOutlinedIcon from '@material-ui/icons/ThumbUpOutlined'
+import VideoCallOutlinedIcon from '@material-ui/icons/VideoCallOutlined'
+import DashboardOutlinedIcon from '@material-ui/icons/DashboardOutlined'
 
 export const sideBarShowMore = [
   { Icon: ExpandMoreOutlinedIcon, text: 'Show more' },
@@ -29,12 +31,13 @@ export const sideBarShowLess = [
 export const sideBarMenuRows = [
   { Icon: HomeIcon, text: 'Home' },
   { Icon: ExploreOutlinedIcon, text: 'Explore' },
-  { Icon: SubscriptionsOutlinedIcon, text: 'Subscriptions' },
-  { Icon: VideoLibraryOutlinedIcon, text: 'Library' },
-  { Icon: HistoryOutlinedIcon, text: 'History' },
+  { Icon: SubscriptionsOutlinedIcon, text: 'Subscriptions', path: '/subscriptions' },
+  { Icon: VideoLibraryOutlinedIcon, text: 'Library', path: '/playlists' },
+  { Icon: HistoryOutlinedIcon, text: 'History', path: '/history' },
   { Icon: ThumbUpOutlinedIcon, text: 'Liked Videos', path: '/liked-videos' },
-  { Icon: ShopOutlinedIcon, text: 'Your videos' },
-  { Icon: QueryBuilderOutlinedIcon, text: 'Watch later' },
+  { Icon: QueryBuilderOutlinedIcon, text: 'Watch later', path: '/watch-later' },
+  { Icon: VideoCallOutlinedIcon, text: 'Upload video', path: '/upload' },
+  { Icon: ShopOutlinedIcon, text: 'Your videos', path: '/studio' },
   { Icon: PlaylistPlayOutlinedIcon, text: 'Music' },
 ]
 
@@ -53,7 +56,10 @@ export const moreFromYouTubeRows = [
 export const miniSidebarRows = [
   { Icon: HomeIcon, text: 'Home' },
   { Icon: ExploreOutlinedIcon, text: 'Explore' },
-  { Icon: SubscriptionsOutlinedIcon, text: 'Subscriptions' },
+  { Icon: SubscriptionsOutlinedIcon, text: 'Subscriptions', path: '/subscriptions' },
+  { Icon: VideoCallOutlinedIcon, text: 'Upload', path: '/upload' },
+  { Icon: HistoryOutlinedIcon, text: 'History', path: '/history' },
   { Icon: ThumbUpOutlinedIcon, text: 'Liked Videos', path: '/liked-videos' },
-  { Icon: VideoLibraryOutlinedIcon, text: 'Library' },
+  { Icon: QueryBuilderOutlinedIcon, text: 'Watch later', path: '/watch-later' },
+  { Icon: VideoLibraryOutlinedIcon, text: 'Library', path: '/playlists' },
 ]

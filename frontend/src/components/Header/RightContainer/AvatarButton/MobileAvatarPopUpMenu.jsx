@@ -7,8 +7,11 @@ import { MobileAvatarMenuBottom } from './MobileAvatarMenuBottom'
 import { MobileAvatarMenuTop } from './MobileAvatarMenuTop'
 import { MobileAvatarMenuHeader } from './MobileAvatarMenuHeader'
 import { MobileUpButton } from './MobileUpButton'
+import { useAuth } from '../../../../context/AuthContext'
 
 function MobileAvatarPopUpMenu({ anchorAvatarButton, handleAvatarMenuClose }) {
+  const { currentUser } = useAuth();
+
   return (
     <MobileAvatarMenuContainer
       anchorEl={anchorAvatarButton}
@@ -16,7 +19,7 @@ function MobileAvatarPopUpMenu({ anchorAvatarButton, handleAvatarMenuClose }) {
       onClose={handleAvatarMenuClose}
     >
       <MobileAvatarMenuHeader onClick={handleAvatarMenuClose} />
-      <AvatarAccountInfo onClick={handleAvatarMenuClose} />
+      <AvatarAccountInfo onClick={handleAvatarMenuClose} user={currentUser} />
       <MobileUpButton onClick={handleAvatarMenuClose} />
       <Divider />
       <MobileAvatarMenuTop onClick={handleAvatarMenuClose} />

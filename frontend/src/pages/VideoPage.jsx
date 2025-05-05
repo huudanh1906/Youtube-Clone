@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useHistory } from 'react-router-dom'
 import styled from 'styled-components/macro'
-import { Typography, Avatar, Divider, CircularProgress, Grid } from '@material-ui/core'
+import { Typography, Avatar, Divider, CircularProgress, Grid, Button } from '@material-ui/core'
 import ThumbUpAltOutlinedIcon from '@material-ui/icons/ThumbUpAltOutlined'
 import ThumbDownAltOutlinedIcon from '@material-ui/icons/ThumbDownAltOutlined'
 import ShareOutlinedIcon from '@material-ui/icons/ShareOutlined'
@@ -20,8 +20,20 @@ import {
 import he from 'he'
 import { useAuth } from '../context/AuthContext'
 import VideoService from '../services/video.service'
+import SubscriptionService from '../services/subscription.service'
+import HistoryService from '../services/history.service'
+import PlaylistService from '../services/playlist.service'
 import ThumbUpIcon from '@material-ui/icons/ThumbUp'
 import ThumbUpOutlinedIcon from '@material-ui/icons/ThumbUpOutlined'
+import SubscribeButton from '../components/Videos/SubscribeButton'
+import PlaylistDialog from '../components/Playlists/PlaylistDialog'
+import Dialog from '@material-ui/core/Dialog'
+import DialogActions from '@material-ui/core/DialogActions'
+import DialogContent from '@material-ui/core/DialogContent'
+import DialogContentText from '@material-ui/core/DialogContentText'
+import DialogTitle from '@material-ui/core/DialogTitle'
+import WatchLaterService from '../services/watchlater.service'
+import QueryBuilderOutlinedIcon from '@material-ui/icons/QueryBuilderOutlined'
 
 const VideoPage = () => {
   const { videoId } = useParams()
@@ -34,6 +46,9 @@ const VideoPage = () => {
   const isMobileView = useIsMobileView()
   const [isLiked, setIsLiked] = useState(false)
   const { isLoggedIn } = useAuth()
+  const [playlistDialogOpen, setPlaylistDialogOpen] = useState(false)
+  const [showLoginDialog, setShowLoginDialog] = useState(false)
+  const [isInWatchLater, setIsInWatchLater] = useState(false)
 
   useEffect(() => {
     const fetchVideoDetails = async () => {
@@ -72,10 +87,27 @@ const VideoPage = () => {
 
           if (commentsResponse.data.items) {
             setComments(commentsResponse.data.items)
+          } else {
+            setComments([])
           }
 
           // Fetch related videos using the video title as search query
           fetchRelatedVideos(data.items[0].snippet.title)
+
+          // Add to watch history if user is logged in
+          if (isLoggedIn) {
+            // Chuyển đổi thời lượng ISO 8601 thành số giây
+            const duration = moment.duration(data.items[0].contentDetails.duration).asSeconds()
+
+            await HistoryService.addToHistory({
+              videoId: data.items[0].id,
+              title: data.items[0].snippet.title,
+              description: data.items[0].snippet.description,
+              thumbnailUrl: data.items[0].snippet.thumbnails.high.url,
+              channelTitle: data.items[0].snippet.channelTitle,
+              duration: Math.round(duration)
+            })
+          }
         } else {
           setLoading(false)
         }
@@ -86,7 +118,7 @@ const VideoPage = () => {
     }
 
     fetchVideoDetails()
-  }, [videoId])
+  }, [videoId, isLoggedIn])
 
   useEffect(() => {
     const checkIfVideoIsLiked = async () => {
@@ -101,6 +133,21 @@ const VideoPage = () => {
     }
 
     checkIfVideoIsLiked()
+  }, [isLoggedIn, videoId])
+
+  useEffect(() => {
+    const checkIfInWatchLater = async () => {
+      if (isLoggedIn && videoId) {
+        try {
+          const inWatchLater = await WatchLaterService.isInWatchLater(videoId)
+          setIsInWatchLater(inWatchLater)
+        } catch (error) {
+          console.error('Error checking if video is in watch later:', error)
+        }
+      }
+    }
+
+    checkIfInWatchLater()
   }, [isLoggedIn, videoId])
 
   const fetchRelatedVideos = async (videoTitle) => {
@@ -231,6 +278,64 @@ const VideoPage = () => {
     }
   }
 
+  const handleSaveClick = () => {
+    if (!isLoggedIn) {
+      setShowLoginDialog(true)
+      return
+    }
+    setPlaylistDialogOpen(true)
+  }
+
+  const handleAddToPlaylist = async (playlist) => {
+    try {
+      // Convert ISO duration to seconds for storage
+      const duration = video?.contentDetails?.duration ?
+        moment.duration(video.contentDetails.duration).asSeconds() : 0
+
+      const videoData = {
+        videoId: videoId,
+        title: video?.snippet?.title || '',
+        description: video?.snippet?.description || '',
+        thumbnailUrl: video?.snippet?.thumbnails?.high?.url || '',
+        channelTitle: video?.snippet?.channelTitle || '',
+        duration: Math.round(duration)
+      }
+
+      await PlaylistService.addToPlaylist(playlist.id, videoData)
+      // Could add a success notification here
+    } catch (error) {
+      console.error('Error adding video to playlist:', error)
+    }
+  }
+
+  const handleWatchLaterToggle = async () => {
+    if (!isLoggedIn) {
+      setShowLoginDialog(true)
+      return
+    }
+
+    try {
+      if (isInWatchLater) {
+        await WatchLaterService.removeFromWatchLater(videoId)
+        setIsInWatchLater(false)
+      } else {
+        const videoData = {
+          videoId,
+          title: video?.snippet?.title || '',
+          description: video?.snippet?.description || '',
+          thumbnailUrl: video?.snippet?.thumbnails?.high?.url || '',
+          channelTitle: video?.snippet?.channelTitle || '',
+          duration: video?.contentDetails?.duration ?
+            moment.duration(video.contentDetails.duration).asSeconds() : 0
+        }
+        await WatchLaterService.addToWatchLater(videoData)
+        setIsInWatchLater(true)
+      }
+    } catch (error) {
+      console.error('Error toggling watch later:', error)
+    }
+  }
+
   if (loading) {
     return (
       <LoadingContainer>
@@ -286,10 +391,11 @@ const VideoPage = () => {
               </ViewsAndDate>
 
               <ActionButtons>
-                <ActionButton>
-                  <ThumbUpAltOutlinedIcon />
-                  <Typography variant="body2">{numeral(likeCount).format('0,0')}</Typography>
-                </ActionButton>
+                <VideoLikeButton
+                  videoInfo={video}
+                  isLiked={isLiked}
+                  onLikeToggle={handleLikeToggle}
+                />
 
                 <ActionButton>
                   <ThumbDownAltOutlinedIcon />
@@ -301,9 +407,16 @@ const VideoPage = () => {
                   <Typography variant="body2">SHARE</Typography>
                 </ActionButton>
 
-                <ActionButton>
+                <ActionButton onClick={handleSaveClick}>
                   <PlaylistAddOutlinedIcon />
                   <Typography variant="body2">SAVE</Typography>
+                </ActionButton>
+
+                <ActionButton onClick={handleWatchLaterToggle}>
+                  <QueryBuilderOutlinedIcon style={{ color: isInWatchLater ? '#3ea6ff' : 'inherit' }} />
+                  <Typography variant="body2" style={{ color: isInWatchLater ? '#3ea6ff' : 'inherit' }}>
+                    {isInWatchLater ? 'ADDED' : 'WATCH LATER'}
+                  </Typography>
                 </ActionButton>
 
                 <IconButton>
@@ -319,20 +432,29 @@ const VideoPage = () => {
                 <ChannelAvatar
                   src={channelDetails?.snippet?.thumbnails?.default?.url}
                   alt={channelTitle}
+                  onClick={() => history.push(`/channel/${video.snippet.channelId}`)}
                 />
 
                 <ChannelText>
-                  <Typography variant="h3">{channelTitle}</Typography>
+                  <ChannelNameLink
+                    onClick={() => history.push(`/channel/${video.snippet.channelId}`)}
+                  >
+                    {channelTitle}
+                  </ChannelNameLink>
                   <Typography variant="body2">
                     {channelDetails ? numeral(channelDetails.statistics.subscriberCount).format('0.0a') : '0'} subscribers
                   </Typography>
                 </ChannelText>
 
-                <VideoLikeButton
-                  videoInfo={video}
-                  isLiked={isLiked}
-                  onLikeToggle={handleLikeToggle}
-                />
+                {video && video.snippet && video.snippet.channelId && (
+                  <SubscribeButtonWrapper>
+                    <SubscribeButton
+                      channelId={video.snippet.channelId}
+                      channelTitle={channelTitle}
+                      channelThumbnailUrl={channelDetails?.snippet?.thumbnails?.default?.url || ''}
+                    />
+                  </SubscribeButtonWrapper>
+                )}
               </ChannelHeader>
 
               <DescriptionContainer>
@@ -345,11 +467,11 @@ const VideoPage = () => {
             <CommentsSection>
               <CommentHeader>
                 <Typography variant="h2">
-                  {numeral(comments.length).format('0,0')} Comments
+                  {numeral(comments?.length || 0).format('0,0')} Comments
                 </Typography>
               </CommentHeader>
 
-              {comments.map((comment) => (
+              {comments?.map((comment) => (
                 <CommentItem key={comment.id}>
                   <CommentAvatar
                     src={comment.snippet.topLevelComment.snippet.authorProfileImageUrl}
@@ -456,6 +578,34 @@ const VideoPage = () => {
           </RelatedVideosSection>
         )}
       </PageContent>
+
+      {/* Playlist Dialog */}
+      <PlaylistDialog
+        open={playlistDialogOpen}
+        onClose={() => setPlaylistDialogOpen(false)}
+        onSuccess={handleAddToPlaylist}
+      />
+
+      {/* Login Dialog */}
+      <Dialog
+        open={showLoginDialog}
+        onClose={() => setShowLoginDialog(false)}
+      >
+        <DialogTitle>Sign In Required</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Signed-in users can like videos and build playlists. Sign in to save your preferences.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setShowLoginDialog(false)} color="default">
+            Cancel
+          </Button>
+          <Button onClick={() => history.push('/login')} color="primary">
+            Sign In
+          </Button>
+        </DialogActions>
+      </Dialog>
     </VideoPageContainer>
   )
 }
@@ -500,10 +650,10 @@ const VideoLikeButton = ({ videoInfo, isLiked, onLikeToggle }) => {
             <CustomDialogContent>
               Signed-in users can like videos and build playlists. Sign in to save your preferences.
             </CustomDialogContent>
-            <DialogActions>
-              <DialogButton onClick={handleClose}>Cancel</DialogButton>
-              <DialogButton primary onClick={handleLogin}>Sign In</DialogButton>
-            </DialogActions>
+            <FixedDialogActions>
+              <FixedDialogButton onClick={handleClose}>Cancel</FixedDialogButton>
+              <FixedDialogButton primary onClick={handleLogin}>Sign In</FixedDialogButton>
+            </FixedDialogActions>
           </LoginDialogContainer>
         </LoginDialogBackdrop>
       )}
@@ -518,9 +668,10 @@ const VideoPageContainer = styled.div`
   padding: 0;
   width: 100%;
   margin: 0 auto;
+  padding-top: 56px; /* Thêm padding-top cho header */
   
   @media screen and (min-width: ${TWO_COL_MIN_WIDTH}px) {
-    padding: 24px 24px 0 24px;
+    padding: 80px 24px 0 24px; /* Tăng padding top trên desktop */
   }
 `
 
@@ -551,6 +702,7 @@ const VideoPlayerContainer = styled.div`
   position: relative;
   padding-bottom: 56.25%; /* 16:9 aspect ratio */
   height: 0;
+  margin-top: 10px; /* Thêm margin-top để không bị che khuất */
   
   iframe {
     position: absolute;
@@ -644,24 +796,28 @@ const ChannelAvatar = styled(Avatar)`
 `
 
 const ChannelText = styled.div`
-  flex: 1;
-  
-  h3 {
-    font-size: 16px;
+  margin-left: 12px;
+`
+
+const ChannelNameLink = styled(Typography)`
+  && {
     font-weight: 500;
-    margin-bottom: 4px;
+    font-size: 16px;
+    cursor: pointer;
+    
+    &:hover {
+      color: #065fd4;
+    }
   }
 `
 
-const SubscribeButton = styled.button`
-  background-color: #cc0000;
-  color: #fff;
-  border: none;
-  padding: 10px 16px;
-  border-radius: 2px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
+const SubscribeButtonWrapper = styled.div`
+  margin-left: auto;
+  
+  @media screen and (max-width: ${TWO_COL_MIN_WIDTH}px) {
+    margin-top: 10px;
+    margin-left: 0;
+  }
 `
 
 const DescriptionContainer = styled.div`
@@ -823,6 +979,7 @@ const RelatedVideoStats = styled.p`
 
 const LikeButtonContainer = styled.div`
   display: flex;
+  flex-direction: column;
   align-items: center;
   cursor: pointer;
   margin-right: 16px;
@@ -831,6 +988,10 @@ const LikeButtonContainer = styled.div`
   
   &:hover {
     background-color: rgba(0, 0, 0, 0.05);
+  }
+  
+  @media screen and (min-width: ${TWO_COL_MIN_WIDTH}px) {
+    flex-direction: row;
   }
 `
 
@@ -867,12 +1028,12 @@ const CustomDialogContent = styled.p`
   margin-bottom: 24px;
 `
 
-const DialogActions = styled.div`
+const FixedDialogActions = styled.div`
   display: flex;
   justify-content: flex-end;
 `
 
-const DialogButton = styled.button`
+const FixedDialogButton = styled.button`
   background-color: ${props => props.primary ? '#3ea6ff' : 'inherit'};
   color: ${props => props.primary ? 'white' : 'inherit'};
   border: none;
@@ -882,4 +1043,4 @@ const DialogButton = styled.button`
   font-weight: 500;
   cursor: pointer;
   margin-left: ${props => props.primary ? '16px' : '0'};
-` 
+`

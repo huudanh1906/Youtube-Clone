@@ -2,6 +2,7 @@ import React from 'react'
 import he from 'he'
 import moment from 'moment'
 import numeral from 'numeral'
+import { useHistory } from 'react-router-dom'
 import { MoreButton } from '../Videos/MoreButton'
 import { DotSeparator } from '../Videos/ChannelDetails'
 import {
@@ -14,6 +15,7 @@ import {
   StyledAvatar,
   DescriptionsContainer,
 } from './searchUtils'
+import styled from 'styled-components/macro'
 
 // desktop view can't use MUI CardHeader because position of elements inside CardHeader can't be changed.
 export const DesktopVideoContent = ({
@@ -23,12 +25,13 @@ export const DesktopVideoContent = ({
   channelAvatar,
   channelTitle,
   description,
+  channelId,
 }) => {
   return (
     <ContentContainer>
       <Title title={title} />
       <Stats {...{ viewCount, publishedAt }} />
-      <Avatar {...{ channelAvatar, channelTitle }} />
+      <Avatar {...{ channelAvatar, channelTitle, channelId }} />
       <Descriptions description={description} />
     </ContentContainer>
   )
@@ -56,13 +59,22 @@ const Stats = ({ viewCount, publishedAt }) => {
   )
 }
 
-const Avatar = ({ channelAvatar, channelTitle }) => {
+const Avatar = ({ channelAvatar, channelTitle, channelId }) => {
+  const history = useHistory()
+
+  const handleChannelClick = (e) => {
+    e.stopPropagation() // Ngăn sự kiện click lan tỏa đến video card
+    history.push(`/channel/${channelId}`)
+  }
+
   return (
     <AvatarContainer>
-      <StyledAvatar src={channelAvatar} />
-      <ContentText variant="subtitle1" style={{ paddingLeft: '8px' }}>
-        {channelTitle}
-      </ContentText>
+      <ChannelLink onClick={handleChannelClick}>
+        <StyledAvatar src={channelAvatar} />
+        <ContentText variant="subtitle1" style={{ paddingLeft: '8px' }}>
+          {channelTitle}
+        </ContentText>
+      </ChannelLink>
     </AvatarContainer>
   )
 }
@@ -74,3 +86,13 @@ const Descriptions = ({ description }) => {
     </DescriptionsContainer>
   )
 }
+
+const ChannelLink = styled.div`
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  
+  &:hover {
+    color: #065fd4;
+  }
+`
